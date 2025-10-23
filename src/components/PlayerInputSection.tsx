@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Input, Textarea, Button } from './ui';
 import { Users, History } from 'lucide-react';
 import { usePlayerInput } from '../hooks';

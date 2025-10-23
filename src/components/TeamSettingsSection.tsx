@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, Button, Input } from './ui';
 import { Settings, Target, Zap } from 'lucide-react';
 import type { AlgorithmType } from '../types';
