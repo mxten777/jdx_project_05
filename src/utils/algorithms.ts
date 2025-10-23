@@ -217,7 +217,7 @@ export const parsePlayersFromText = (text: string): Player[] => {
         const name = match[1].trim();
         const score = parseFloat(match[2]);
         
-        if (name && !isNaN(score) && score >= 0) {
+        if (name && !isNaN(score)) {
           players.push({
             id: `player-${index + 1}`,
             name,

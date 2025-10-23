@@ -1,77 +1,73 @@
-import { Card, Input, Textarea, Button } from './ui';
-import { Users, History } from 'lucide-react';
-import { usePlayerInput } from '../hooks';
+import React from 'react';
 import type { Player } from '../types';
 
 interface PlayerInputSectionProps {
   matchTitle: string;
   setMatchTitle: (title: string) => void;
+  playerInput: string;
+  setPlayerInput: (input: string) => void;
+  parsedPlayers: Player[];
   onNext: () => void;
-  onOpenHistory: () => void;
 }
 
-function PlayerInputSection({ matchTitle, setMatchTitle, onNext, onOpenHistory }: PlayerInputSectionProps) {
-  const { playerText, setPlayerText, parsedPlayers } = usePlayerInput();
-  const sampleText = '김철수 85, 이영희 90, 박민수 75, 정수연 80, 강호동 70, 유재석 95';
+const PlayerInputSection: React.FC<PlayerInputSectionProps> = ({
+  matchTitle,
+  setMatchTitle,
+  playerInput,
+  setPlayerInput,
+  parsedPlayers,
+  onNext,
+}) => {
   const isValid = parsedPlayers.length >= 2 && matchTitle.trim();
 
   return (
-    <Card>
-      <div className="text-center mb-6">
-        <p className="text-gray-600">참가자와 점수를 입력하여 균형잡힌 팀을 만들어보세요</p>
-      </div>
-      <div className="space-y-4">
-        <Input
-          label="경기 제목"
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+        참가자 입력
+      </h2>
+      
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          경기 제목
+        </label>
+        <input
+          type="text"
           placeholder="경기 제목을 입력하세요"
           value={matchTitle}
-          onChange={setMatchTitle}
-          required
+          onChange={(e) => setMatchTitle(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
-        <Textarea
-          label="참가자 입력"
-          placeholder={'참가자 이름과 점수를 입력하세요 (예시): ' + sampleText}
-          value={playerText}
-          onChange={setPlayerText}
-          rows={8}
-          required
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          참가자 정보
+        </label>
+        <textarea
+          placeholder="참가자 이름과 점수를 입력하세요 (예: 김철수 85)"
+          value={playerInput}
+          onChange={(e) => setPlayerInput(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg h-40 focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         />
-        {parsedPlayers.length > 0 && (
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-800 mb-2">인식된 참가자: {parsedPlayers.length}명</p>
-            <div className="flex flex-wrap gap-2">
-              {parsedPlayers.slice(0, 10).map((player: Player, index: number) => (
-                <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm">
-                  {player.name} ({player.score})
-                </span>
-              ))}
-              {parsedPlayers.length > 10 && (
-                <span className="text-blue-600 text-sm">+{parsedPlayers.length - 10}명 더</span>
-              )}
+        <div className="mt-2 text-sm text-blue-600 dark:text-blue-400">
+          인식된 참가자: <span className="font-semibold">{parsedPlayers.length}명</span>
+          {parsedPlayers.length > 0 && (
+            <div className="mt-1 text-gray-600 dark:text-gray-400">
+              {parsedPlayers.map(p => `${p.name}(${p.score})`).join(', ')}
             </div>
-          </div>
-        )}
-        <div className="flex gap-3">
-          <Button
-            variant="primary"
-            icon={Users}
-            onClick={onNext}
-            disabled={!isValid}
-            className="flex-1"
-          >
-            팀 배정하기
-          </Button>
-          <Button
-            variant="ghost"
-            icon={History}
-            onClick={onOpenHistory}
-          >
-            기록
-          </Button>
+          )}
         </div>
       </div>
-    </Card>
+
+      <button
+        onClick={onNext}
+        disabled={!isValid}
+        className="w-full bg-blue-600 text-white p-3 rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-blue-700 transition-colors"
+      >
+        다음 단계 ({parsedPlayers.length}/2명 이상)
+      </button>
+    </div>
   );
-}
+};
 
 export default PlayerInputSection;

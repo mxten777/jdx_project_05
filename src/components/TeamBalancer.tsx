@@ -227,6 +227,17 @@ const TeamConfiguration: React.FC<{
     { value: 'random' as AlgorithmType, label: '랜덤', icon: Shuffle, description: '완전 무작위' },
   ];
 
+  // 디버깅: 전달받은 players 배열 출력
+  console.log('TeamConfiguration players:', players);
+  // 디버깅: 전달받은 players 배열 출력
+  console.log('TeamConfiguration players:', players);
+  console.log('TeamConfiguration teamCount:', teamCount);
+  const handleAssign = () => {
+    console.log('팀 배정하기 버튼 클릭됨');
+    console.log('배정할 players:', players);
+    console.log('배정할 teamCount:', teamCount);
+    onAssign();
+  };
   return (
     <motion.div
       initial={{ opacity: 0, x: 100 }}
@@ -339,7 +350,7 @@ const TeamConfiguration: React.FC<{
             이전
           </button>
           <button
-            onClick={onAssign}
+            onClick={handleAssign}
             className="flex-2 bg-primary-600 text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-700 transition-colors flex items-center justify-center gap-2"
           >
             <Trophy className="w-4 h-4" />
@@ -682,7 +693,17 @@ function TeamBalancer() {
               setPlayerText={setPlayerText}
               matchTitle={matchTitle}
               setMatchTitle={setMatchTitle}
-              onNext={() => { /* TODO: implement next step handler */ }}
+              onNext={() => {
+                console.log('onNext called');
+                const parsedPlayers = parsePlayersFromText(playerText);
+                console.log('parsedPlayers:', parsedPlayers);
+                setAppState(prev => ({
+                  ...prev,
+                  currentStep: 'configure',
+                  players: parsedPlayers,
+                }));
+                console.log('appState.currentStep set to configure');
+              }}
               onOpenHistory={() => setIsHistoryOpen(true)}
             />
           ) : appState.currentStep === 'configure' ? (
