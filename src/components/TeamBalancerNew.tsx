@@ -87,7 +87,7 @@ const TeamBalancer: React.FC = () => {
     if (!result) return;
     const isGeneralMatch = matchTitle === '일반팀 배정';
     let text = `📊 ${matchTitle}\n\n`;
-    result.teams.forEach((team, index) => {
+  result.teams.forEach((team) => {
       if (team.id === 'bench') {
         text += `🥒 깍두기팀\n`;
       } else {
@@ -130,8 +130,8 @@ const TeamBalancer: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-black flex flex-col items-center justify-center px-2 md:px-8 py-4">
-      <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-navy-700 via-black to-navy-900 flex flex-col items-center justify-center px-2 sm:px-4 md:px-8 py-2 sm:py-4 font-premium">
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-4xl bg-gradient-to-br from-gold-50 via-white to-navy-50 border-2 border-gold-300 rounded-2xl shadow-lg p-3 sm:p-4 md:p-7 font-premium">
         {/* 프리미엄 헤더 컴포넌트 */}
         <AppHeader />
 
@@ -181,8 +181,8 @@ const TeamBalancer: React.FC = () => {
         {/* 프리미엄 푸터 */}
         <footer className="text-center mt-10 pt-8 border-t border-gray-300 dark:border-gray-700">
           <div className="flex flex-row items-center gap-3 justify-center">
-            <img src="/images/baikal_logo.png" alt="Baikal Logo" className="w-10 h-10 rounded-full shadow-lg border-2 border-yellow-300 bg-white object-cover" />
-            <span className="text-base font-semibold text-blue-900 dark:text-yellow-300">JDX Team Balancer</span>
+            <img src="/images/baikal_logo.png" alt="Baikal Logo" className="w-10 h-10 rounded-full shadow-lg border-2 border-gold-300 bg-white object-cover" />
+            <span className="text-base font-normal text-navy-700 dark:text-gold-400 font-premium">JDX Team Balancer</span>
           </div>
           <span className="text-sm text-gray-500 dark:text-gray-400 block mt-2">Copyright © 2025. All rights reserved.</span>
           <span className="text-xs text-gray-400 dark:text-gray-500 block">Made with ❤️ by mxten777</span>
