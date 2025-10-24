@@ -177,13 +177,17 @@ export const assignTeams = (
 ): TeamAssignmentResult => {
   let teams: Team[] = [];
   let benchPlayers: Player[] = [];
-  // 깍두기팀 먼저 추출
+  // benchCount만큼 전체에서 랜덤하게 추출
   const benchCount = players.length % teamCount;
+  let mainPlayers = players;
   if (benchCount > 0) {
-    benchPlayers = players.slice(0, benchCount);
+    // 랜덤 셔플
+    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    benchPlayers = shuffled.slice(0, benchCount);
+    // bench에 들어간 인원 제외
+    const benchIds = new Set(benchPlayers.map(p => p.id));
+    mainPlayers = shuffled.filter(p => !benchIds.has(p.id));
   }
-  // 남은 인원만 팀 배정
-  const mainPlayers = benchCount > 0 ? players.slice(benchCount) : players;
   if (algorithm === 'greedy') teams = greedyAlgorithm(mainPlayers, teamCount);
   else if (algorithm === 'optimal') teams = optimalAlgorithm(mainPlayers, teamCount);
   else if (algorithm === 'random') teams = randomAlgorithm(mainPlayers, teamCount);
