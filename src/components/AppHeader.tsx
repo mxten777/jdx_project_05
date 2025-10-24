@@ -1,69 +1,29 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ThemeToggle } from './ui';
 
-interface AppHeaderProps {
-  title?: string;
-  subtitle?: string;
-}
-
-const AppHeader: React.FC<AppHeaderProps> = ({ 
-  title = "공정한 팀 배정기",
-  subtitle = "팀 배정, 기록 관리, 시각화까지 한 번에!"
-}) => (
-  <motion.header 
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-    className="w-full py-8 flex flex-col items-center relative bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 mb-8 rounded-3xl shadow-xl border border-white/20"
-  >
-    {/* Theme Toggle */}
-    <div className="absolute top-4 right-4">
-      <ThemeToggle />
+const AppHeader: React.FC = () => (
+  <header className="w-full flex flex-col items-center justify-center py-6 mb-6 bg-gradient-to-r from-blue-900 via-yellow-400 to-yellow-700 shadow-lg rounded-b-3xl">
+    <div className="flex items-center gap-4">
+      <img src="/images/baikal_logo.png" alt="Baikal Logo" className="w-12 h-12 rounded-full shadow-lg border-2 border-yellow-300 bg-white object-cover" />
+      <span className="inline-block rounded-full bg-gradient-to-br from-yellow-400 via-yellow-600 to-yellow-800 p-2 shadow-lg">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="18" r="18" fill="url(#gold)"/>
+          <text x="50%" y="55%" textAnchor="middle" dominantBaseline="middle" fontSize="18" fontWeight="bold" fill="#fff">⚖️</text>
+          <defs>
+            <radialGradient id="gold" cx="0.5" cy="0.5" r="0.5" fx="0.5" fy="0.5">
+              <stop offset="0%" stopColor="#FFD700"/>
+              <stop offset="100%" stopColor="#B8860B"/>
+            </radialGradient>
+          </defs>
+        </svg>
+      </span>
+      <span className="text-3xl md:text-4xl font-extrabold tracking-tight text-white font-montserrat drop-shadow-lg">
+        JDX Team Balancer
+      </span>
     </div>
-
-    {/* Main Content */}
-    <motion.div 
-      className="flex items-center gap-3 mb-3"
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ delay: 0.2, duration: 0.4 }}
-    >
-      <motion.span 
-        className="text-4xl filter drop-shadow-lg"
-        animate={{ 
-          rotate: [0, -10, 10, -10, 0],
-          scale: [1, 1.1, 1]
-        }}
-        transition={{ 
-          duration: 2, 
-          repeat: Infinity, 
-          repeatDelay: 5,
-          ease: "easeInOut"
-        }}
-      >
-        🏆
-      </motion.span>
-      <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-        {title}
-      </h1>
-    </motion.div>
-    
-    <motion.p 
-      className="text-gray-600 dark:text-gray-300 text-sm md:text-base text-center max-w-md"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.4, duration: 0.4 }}
-    >
-      {subtitle}
-    </motion.p>
-
-    {/* Decorative Elements */}
-    <div className="absolute inset-0 overflow-hidden rounded-3xl">
-      <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-xl"></div>
-      <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-gradient-to-br from-indigo-400/20 to-blue-400/20 rounded-full blur-xl"></div>
-    </div>
-  </motion.header>
+    <span className="text-base md:text-lg text-white/80 font-light mt-2 text-center">
+      공정하고 프리미엄급 팀 배정, 친구들과 최고의 경험을!
+    </span>
+  </header>
 );
 
 export default AppHeader;

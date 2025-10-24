@@ -176,14 +176,33 @@ export const assignTeams = (
   algorithm: AlgorithmType = 'greedy'
 ): TeamAssignmentResult => {
   let teams: Team[] = [];
-  if (algorithm === 'greedy') teams = greedyAlgorithm(players, teamCount);
-  else if (algorithm === 'optimal') teams = optimalAlgorithm(players, teamCount);
-  else if (algorithm === 'random') teams = randomAlgorithm(players, teamCount);
-  else teams = greedyAlgorithm(players, teamCount);
+  let benchPlayers: Player[] = [];
+  // 깍두기팀 먼저 추출
+  const benchCount = players.length % teamCount;
+  if (benchCount > 0) {
+    benchPlayers = players.slice(0, benchCount);
+  }
+  // 남은 인원만 팀 배정
+  const mainPlayers = benchCount > 0 ? players.slice(benchCount) : players;
+  if (algorithm === 'greedy') teams = greedyAlgorithm(mainPlayers, teamCount);
+  else if (algorithm === 'optimal') teams = optimalAlgorithm(mainPlayers, teamCount);
+  else if (algorithm === 'random') teams = randomAlgorithm(mainPlayers, teamCount);
+  else teams = greedyAlgorithm(mainPlayers, teamCount);
 
-  const balanceScore = calculateBalanceScore(teams);
-  const standardDeviation = calculateStandardDeviation(teams);
-  const totalScores = teams.map(t => t.totalScore);
+  // 깍두기팀 결과에 추가
+  if (benchPlayers.length > 0) {
+    teams.push({
+      id: 'bench',
+      name: '깍두기팀',
+      players: benchPlayers,
+      totalScore: benchPlayers.reduce((sum, p) => sum + p.score, 0),
+      averageScore: benchPlayers.length > 0 ? benchPlayers.reduce((sum, p) => sum + p.score, 0) / benchPlayers.length : 0,
+    });
+  }
+
+  const balanceScore = calculateBalanceScore(teams.filter(t => t.id !== 'bench'));
+  const standardDeviation = calculateStandardDeviation(teams.filter(t => t.id !== 'bench'));
+  const totalScores = teams.filter(t => t.id !== 'bench').map(t => t.totalScore);
   const scoreGap = Math.max(...totalScores) - Math.min(...totalScores);
 
   return {
@@ -195,29 +214,60 @@ export const assignTeams = (
 };
 
 // 플레이어 입력 텍스트 파싱
-export const parsePlayersFromText = (text: string): Player[] => {
-  const lines = text.trim().split('\n').filter(line => line.trim());
+export const parsePlayersFromText = (text: string, matchTitle?: string): Player[] => {
+  // 인원 구분: /, , 또는 줄넘김
+  const lines = text.trim().split(/\n|,|\//).map(line => line.trim()).filter(line => line);
   const players: Player[] = [];
-  
   lines.forEach((line, index) => {
-    const trimmedLine = line.trim();
-    
-    // 다양한 형식 지원: "이름 점수", "이름,점수", "이름:점수", "이름 - 점수"
-    const patterns = [
-      /^(.+?)\s+(\d+(?:\.\d+)?)$/, // "이름 점수"
-      /^(.+?),\s*(\d+(?:\.\d+)?)$/, // "이름,점수"
-      /^(.+?):\s*(\d+(?:\.\d+)?)$/, // "이름:점수"
-      /^(.+?)\s*-\s*(\d+(?:\.\d+)?)$/, // "이름 - 점수"
-    ];
-    
-    let matched = false;
-    for (const pattern of patterns) {
-      const match = trimmedLine.match(pattern);
+    if (matchTitle === '스크린 팀배정') {
+      // 반드시 점수 필요, 0~28 보정, 마이너스는 0, 28 초과는 28
+      const pattern = /^(.+?)[\s,:-]+(-?\d+(?:\.\d+)?)$/;
+      const match = line.match(pattern);
       if (match) {
         const name = match[1].trim();
-        const score = parseFloat(match[2]);
-        
-        if (name && !isNaN(score)) {
+        let score = parseFloat(match[2]);
+        if (isNaN(score) || score < 0) score = 0;
+        if (score > 28) score = 28;
+        players.push({
+          id: `player-${index + 1}`,
+          name,
+          score,
+        });
+      }
+      // 점수 없는 인원은 무시
+      return;
+    }
+    // 일반팀 배정: 이름만 등록, 점수 무시
+      if (matchTitle === '일반팀 배정') {
+        // 숫자, 점수 등 모두 무시하고 이름만 추출
+        // "이름 숫자", "이름,숫자", "이름:숫자", "이름-숫자" 등 다양한 형식 지원
+        const nameOnly = line.replace(/([\s,:/-]+\d+.*)/, '').trim();
+        if (nameOnly) {
+          players.push({
+            id: `player-${index + 1}`,
+            name: nameOnly,
+            score: 0,
+          });
+        }
+        return;
+      }
+    // 기타: 기존 방식
+    // 다양한 형식 지원: "이름 점수", "이름,점수", "이름:점수", "이름 - 점수"
+    const patterns = [
+      /^(.+?)\s+(-?\d+(?:\.\d+)?)$/,
+      /^(.+?),\s*(-?\d+(?:\.\d+)?)$/,
+      /^(.+?):\s*(-?\d+(?:\.\d+)?)$/,
+      /^(.+?)\s*-\s*(-?\d+(?:\.\d+)?)$/,
+    ];
+    let matched = false;
+    for (const pattern of patterns) {
+      const match = line.match(pattern);
+      if (match) {
+        const name = match[1].trim();
+        let score = parseFloat(match[2]);
+        if (isNaN(score) || score < 0) score = 0;
+        if (score > 28) score = 28;
+        if (name) {
           players.push({
             id: `player-${index + 1}`,
             name,
@@ -228,16 +278,13 @@ export const parsePlayersFromText = (text: string): Player[] => {
         }
       }
     }
-    
-    // 점수 없이 이름만 있는 경우 기본 점수 50 할당
-    if (!matched && trimmedLine) {
+    if (!matched && line) {
       players.push({
         id: `player-${index + 1}`,
-        name: trimmedLine,
+        name: line,
         score: 50,
       });
     }
   });
-  
   return players;
 };

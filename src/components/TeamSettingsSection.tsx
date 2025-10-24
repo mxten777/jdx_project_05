@@ -21,8 +21,8 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
   isLoading,
 }) => {
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
+  <div className="space-y-6 rounded-2xl shadow-xl p-6 border border-yellow-200 md:border-2 bg-gradient-to-br from-blue-50 via-white to-yellow-50 mt-4 md:mt-8">
+      <h2 className="text-2xl font-extrabold text-center text-blue-900 dark:text-yellow-300 mb-2">
         팀 설정
       </h2>
       
@@ -33,9 +33,9 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
         <select
           value={teamCount}
           onChange={(e) => setTeamCount(Number(e.target.value))}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="w-full p-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white dark:bg-gray-800 dark:border-yellow-300 dark:text-white text-lg font-semibold shadow-sm"
         >
-          {[2, 3, 4, 5, 6].map(num => (
+          {[2, 3, 4].map(num => (
             <option key={num} value={num}>{num}팀</option>
           ))}
         </select>
@@ -48,7 +48,7 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
         <select
           value={algorithm}
           onChange={(e) => setAlgorithm(e.target.value as AlgorithmType)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+          className="w-full p-3 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white dark:bg-gray-800 dark:border-yellow-300 dark:text-white text-lg font-semibold shadow-sm"
         >
           <option value="greedy">그리디 (균형 우선)</option>
           <option value="snake">스네이크 드래프트</option>
@@ -59,14 +59,14 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
       <div className="flex gap-3">
         <button
           onClick={onPrevious}
-          className="flex-1 bg-gray-500 text-white p-3 rounded-lg font-medium hover:bg-gray-600 transition-colors"
+          className="flex-1 bg-gradient-to-r from-gray-400 via-gray-600 to-blue-700 text-white p-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-transform"
         >
           이전
         </button>
         <button
           onClick={onAssign}
           disabled={isLoading}
-          className="flex-1 bg-green-600 text-white p-3 rounded-lg font-medium disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors"
+          className="flex-1 bg-gradient-to-r from-yellow-400 via-yellow-600 to-blue-700 text-white p-3 rounded-xl font-bold text-lg shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:scale-105 transition-transform"
         >
           {isLoading ? '배정 중...' : '팀 배정 시작'}
         </button>

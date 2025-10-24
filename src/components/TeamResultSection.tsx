@@ -20,8 +20,9 @@ const TeamResultSection: React.FC<TeamResultSectionProps> = ({
   onShare,
   onNewGame,
 }) => {
+  const isGeneralMatch = matchTitle === '일반팀 배정';
   return (
-    <div className="space-y-6">
+  <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
         팀 배정 결과
       </h2>
@@ -35,20 +36,24 @@ const TeamResultSection: React.FC<TeamResultSectionProps> = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 md:mt-8">
         {result.teams.map((team, index) => (
-          <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              🏆 팀 {index + 1}
+          <div key={index} className={`rounded-2xl shadow-xl p-6 border border-yellow-200 md:border-2 ${team.id === 'bench' ? 'bg-gradient-to-br from-green-100 via-green-200 to-green-300 border-green-200' : 'bg-gradient-to-br from-blue-50 via-white to-yellow-50'} mt-2 md:mt-4`}>
+            <h3 className={`text-xl font-extrabold mb-2 flex items-center gap-2 ${team.id === 'bench' ? 'text-green-700' : 'text-blue-900 dark:text-yellow-300'}`}>
+              {team.id === 'bench' ? '🥒 깍두기팀' : `🏆 ${team.name}`}
             </h3>
-            <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-              총점: {team.totalScore} | 평균: {team.averageScore.toFixed(1)}
-            </div>
-            <div className="space-y-1">
+            {!isGeneralMatch && (
+              <div className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                총점: <span className="font-bold text-yellow-700 dark:text-yellow-300">{team.totalScore}</span> | 평균: <span className="font-bold text-blue-700 dark:text-yellow-200">{team.averageScore.toFixed(1)}</span>
+              </div>
+            )}
+            <div className="space-y-2">
               {team.players.map((player, playerIndex) => (
-                <div key={playerIndex} className="flex justify-between items-center">
-                  <span className="text-gray-900 dark:text-white">{player.name}</span>
-                  <span className="text-gray-600 dark:text-gray-400">{player.score}</span>
+                <div key={playerIndex} className="flex justify-between items-center px-2 py-1 rounded-lg bg-white/60 dark:bg-gray-800/60">
+                  <span className="text-base font-semibold text-gray-900 dark:text-white">{player.name}</span>
+                  {!isGeneralMatch && (
+                    <span className="text-base text-gray-600 dark:text-gray-400">{player.score}</span>
+                  )}
                 </div>
               ))}
             </div>

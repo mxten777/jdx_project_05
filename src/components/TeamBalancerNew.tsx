@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import PlayerInputSection from './PlayerInputSection';
 import TeamSettingsSection from './TeamSettingsSection';
 import TeamResultSection from './TeamResultSection';
+import AppHeader from './AppHeader';
 import LoadingOverlay from './LoadingOverlay';
 import Toast from './Toast';
 
@@ -84,11 +85,24 @@ const TeamBalancer: React.FC = () => {
   // 결과 복사 핸들러
   const handleCopyResult = () => {
     if (!result) return;
+    const isGeneralMatch = matchTitle === '일반팀 배정';
     let text = `📊 ${matchTitle}\n\n`;
     result.teams.forEach((team, index) => {
-      text += `🏆 팀 ${index + 1} (총점: ${team.totalScore}, 평균: ${team.averageScore.toFixed(1)})\n`;
+      if (team.id === 'bench') {
+        text += `🥒 깍두기팀\n`;
+      } else {
+        text += `🏆 ${team.name}`;
+        if (!isGeneralMatch) {
+          text += ` (총점: ${team.totalScore}, 평균: ${team.averageScore.toFixed(1)})`;
+        }
+        text += '\n';
+      }
       team.players.forEach(player => {
-        text += `  • ${player.name} (${player.score})\n`;
+        text += `  • ${player.name}`;
+        if (!isGeneralMatch && team.id !== 'bench') {
+          text += ` (${player.score})`;
+        }
+        text += '\n';
       });
       text += '\n';
     });
@@ -116,17 +130,10 @@ const TeamBalancer: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center px-2 md:px-8 py-4">
-      <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-4 md:p-8">
-        {/* 헤더 */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            ⚖️ 팀 밸런서
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            공정하고 균형잡힌 팀 배정을 위한 도구
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-black flex flex-col items-center justify-center px-2 md:px-8 py-4">
+      <div className="w-full max-w-2xl md:max-w-3xl lg:max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 md:p-8">
+        {/* 프리미엄 헤더 컴포넌트 */}
+        <AppHeader />
 
         {/* 단계별 섹션 */}
         <div className="mt-4 md:mt-8">
@@ -171,12 +178,15 @@ const TeamBalancer: React.FC = () => {
           )}
         </div>
 
-        {/* 푸터 */}
-        <div className="text-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Made with ❤️ for fair team balancing
-          </p>
-        </div>
+        {/* 프리미엄 푸터 */}
+        <footer className="text-center mt-10 pt-8 border-t border-gray-300 dark:border-gray-700">
+          <div className="flex flex-row items-center gap-3 justify-center">
+            <img src="/images/baikal_logo.png" alt="Baikal Logo" className="w-10 h-10 rounded-full shadow-lg border-2 border-yellow-300 bg-white object-cover" />
+            <span className="text-base font-semibold text-blue-900 dark:text-yellow-300">JDX Team Balancer</span>
+          </div>
+          <span className="text-sm text-gray-500 dark:text-gray-400 block mt-2">Copyright © 2025. All rights reserved.</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500 block">Made with ❤️ by mxten777</span>
+        </footer>
       </div>
 
       {/* 토스트 메시지 */}
