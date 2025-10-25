@@ -21,8 +21,9 @@ const TeamResultSection: React.FC<TeamResultSectionProps> = ({
   onNewGame,
 }) => {
   const isGeneralMatch = matchTitle === '일반팀 배정';
+  const isSingleTeam = result.teams.length === 1;
   return (
-  <div className="space-y-6">
+    <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white">
         팀 배정 결과
       </h2>
@@ -31,35 +32,45 @@ const TeamResultSection: React.FC<TeamResultSectionProps> = ({
         <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">
           {matchTitle}
         </div>
-        <div className="text-sm text-blue-600 dark:text-blue-400">
-          밸런스 점수: {result.balanceScore.toFixed(1)}%
-        </div>
       </div>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 md:mt-8">
-        {result.teams.map((team) => (
-          <div key={team.id || team.name} className={`rounded-2xl shadow-lg p-3 sm:p-5 md:p-7 border-2 ${team.id === 'bench' ? 'bg-gradient-to-br from-green-50 via-green-100 to-green-200 border-green-300' : 'bg-gradient-to-br from-gold-50 via-white to-navy-50 border-gold-300'} mt-1 sm:mt-2 md:mt-4 font-premium`}> 
-            <h3 className={`text-lg font-normal mb-2 flex items-center gap-2 ${team.id === 'bench' ? 'text-green-700' : 'text-navy-700 dark:text-gold-500'}`}>
-              {team.id === 'bench' ? '🥒 깍두기팀' : `🏆 ${team.name}`}
-            </h3>
-            {!isGeneralMatch && (
-              <div className="text-xs text-navy-700 dark:text-gold-400 mb-3 font-normal">
-                총점: <span className="text-gold-600 dark:text-gold-300 font-normal">{team.totalScore}</span> | 평균: <span className="text-navy-600 dark:text-gold-200 font-normal">{team.averageScore.toFixed(1)}</span>
-              </div>
-            )}
-            <div className="space-y-2">
-              {team.players.map((player, playerIndex) => (
-                <div key={playerIndex} className="flex justify-between items-center px-2 py-1 rounded-lg bg-white/60 dark:bg-navy-900/60 font-premium">
-                  <span className="text-xs sm:text-sm font-normal text-black dark:text-white">{player.name}</span>
-                  {!isGeneralMatch && (
-                    <span className="text-xs sm:text-sm text-navy-500 dark:text-gold-300 font-normal">{player.score}</span>
-                  )}
-                </div>
-              ))}
-            </div>
+      {isSingleTeam ? (
+        <div className="max-w-md mx-auto rounded-2xl shadow-lg p-6 border-2 border-gold-300 bg-gradient-to-br from-gold-50 via-white to-navy-50 font-premium text-center">
+          <div className="text-xl font-bold text-navy-700 dark:text-gold-400 mb-2">전체 인원 총점/평균</div>
+          <div className="text-lg text-gold-700 dark:text-gold-300 mb-1">총점: <span className="font-extrabold">{result.teams[0].totalScore}</span></div>
+          <div className="text-lg text-navy-700 dark:text-gold-200">평균: <span className="font-extrabold">{result.teams[0].averageScore.toFixed(1)}</span></div>
+        </div>
+      ) : (
+        <>
+          <div className="text-sm text-blue-600 dark:text-blue-400">
+            밸런스 점수: {result.balanceScore.toFixed(1)}%
           </div>
-        ))}
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 md:mt-8">
+            {result.teams.map((team) => (
+              <div key={team.id || team.name} className={`rounded-2xl shadow-lg p-3 sm:p-5 md:p-7 border-2 ${team.id === 'bench' ? 'bg-gradient-to-br from-green-50 via-green-100 to-green-200 border-green-300' : 'bg-gradient-to-br from-gold-50 via-white to-navy-50 border-gold-300'} mt-1 sm:mt-2 md:mt-4 font-premium`}>
+                <h3 className={`text-lg font-normal mb-2 flex items-center gap-2 ${team.id === 'bench' ? 'text-green-700' : 'text-navy-700 dark:text-gold-500'}`}>
+                  {team.id === 'bench' ? '🥒 깍두기팀' : `🏆 ${team.name}`}
+                </h3>
+                {!isGeneralMatch && (
+                  <div className="text-xs text-navy-700 dark:text-gold-400 mb-3 font-normal">
+                    총점: <span className="text-gold-600 dark:text-gold-300 font-normal">{team.totalScore}</span> | 평균: <span className="text-navy-600 dark:text-gold-200 font-normal">{team.averageScore.toFixed(1)}</span>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {team.players.map((player, playerIndex) => (
+                    <div key={playerIndex} className="flex justify-between items-center px-2 py-1 rounded-lg bg-white/60 dark:bg-navy-900/60 font-premium">
+                      <span className="text-xs sm:text-sm font-normal text-black dark:text-white">{player.name}</span>
+                      {!isGeneralMatch && (
+                        <span className="text-xs sm:text-sm text-navy-500 dark:text-gold-300 font-normal">{player.score}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className="flex flex-wrap gap-3">
         <button

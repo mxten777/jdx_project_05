@@ -35,6 +35,7 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
           onChange={(e) => setTeamCount(Number(e.target.value))}
           className="w-full p-2 sm:p-3 border-2 border-gold-300 rounded-xl focus:ring-2 focus:ring-gold-400 focus:border-transparent bg-white dark:bg-navy-900 dark:border-gold-300 dark:text-white text-sm sm:text-base font-normal shadow-sm font-premium"
         >
+          <option value={1}>1팀(전체)</option>
           {[2, 3, 4].map(num => (
             <option key={num} value={num}>{num}팀</option>
           ))}
