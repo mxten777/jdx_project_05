@@ -1,14 +1,96 @@
+// 인원 균등 + 점수 밸런스 하이브리드 알고리즘
+export const hybridAlgorithm = (players: Player[], teamCount: number): Team[] => {
+  // 점수 내림차순 정렬
+  const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+  const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
+    id: `team-${index + 1}`,
+    name: generateTeamName(),
+    players: [],
+    totalScore: 0,
+    averageScore: 0,
+  }));
+  // 1-2-3-...-N-N-...-1 순서로 분배 (지그재그)
+  let idx = 0;
+  let direction = 1;
+  for (let i = 0; i < sortedPlayers.length; i++) {
+    teams[idx].players.push(sortedPlayers[i]);
+    if (direction === 1) {
+      if (idx === teamCount - 1) {
+        direction = -1;
+        idx--;
+      } else {
+        idx++;
+      }
+    } else {
+      if (idx === 0) {
+        direction = 1;
+        idx++;
+      } else {
+        idx--;
+      }
+    }
+  }
+  // 팀 통계 업데이트
+  teams.forEach(team => {
+    const stats = calculateTeamStats(team.players);
+    team.totalScore = stats.totalScore;
+    team.averageScore = stats.averageScore;
+  });
+  // (선택) swap으로 미세조정: 가장 높은 팀과 낮은 팀에서 1명씩 교환해 점수 차이 줄이기
+  // (여기서는 1회만 시도, 반복 최적화는 성능상 생략)
+  let maxTeam = teams[0], minTeam = teams[0];
+  teams.forEach(t => {
+    if (t.totalScore > maxTeam.totalScore) maxTeam = t;
+    if (t.totalScore < minTeam.totalScore) minTeam = t;
+  });
+  let improved = false;
+  for (let i = 0; i < maxTeam.players.length; i++) {
+    for (let j = 0; j < minTeam.players.length; j++) {
+      const p1 = maxTeam.players[i];
+      const p2 = minTeam.players[j];
+      const newMax = maxTeam.totalScore - p1.score + p2.score;
+      const newMin = minTeam.totalScore - p2.score + p1.score;
+      if (Math.abs(newMax - newMin) < Math.abs(maxTeam.totalScore - minTeam.totalScore)) {
+        // swap
+        maxTeam.players[i] = p2;
+        minTeam.players[j] = p1;
+        improved = true;
+        break;
+      }
+    }
+    if (improved) break;
+  }
+  // swap 후 통계 재계산
+  if (improved) {
+    teams.forEach(team => {
+      const stats = calculateTeamStats(team.players);
+      team.totalScore = stats.totalScore;
+      team.averageScore = stats.averageScore;
+    });
+  }
+  return teams;
+};
 import type { Player, Team, TeamAssignmentResult, AlgorithmType } from '../types';
 
 // 팀 이름 생성을 위한 배열들
+
 const teamNamePrefixes = [
   '불타는', '강력한', '빠른', '용감한', '지혜로운', '전설의', '무적의', '황금의',
-  '번개같은', '바람의', '태양의', '달빛의', '별의', '드래곤', '피닉스', '타이거'
+  '번개같은', '바람의', '태양의', '달빛의', '별의', '드래곤', '피닉스', '타이거',
+  '에너지틱', '스마트', '블루', '레드', '그린', '블랙', '화이트', '실버',
+  '로얄', '매직', '슈퍼', '다이나믹', '스톰', '썬더', '윈드', '아쿠아',
+  '울트라', '익스트림', '스피릿', '챌린지', '챔피언', '에이스', '스카이', '오로라',
+  '스파르탄', '이글', '울프', '샤크', '라이온', '베어', '판다', '돌핀',
+  '코브라', '호크', '타이탄', '갤럭시', '코스믹', '오션', '마운틴', '포레스트'
 ];
 
 const teamNameSuffixes = [
   '전사들', '용사들', '팀', '부대', '크루', '길드', '클랜', '그룹',
-  '멤버스', '히어로즈', '파이터즈', '챔피언스', '레전드', '마스터즈', '엘리트', '포스'
+  '멤버스', '히어로즈', '파이터즈', '챔피언스', '레전드', '마스터즈', '엘리트', '포스',
+  '스쿼드', '유나이티드', '어벤저스', '익스프레스', '익스플로러', '헌터즈', '디펜더스', '어택커즈',
+  '브레이커즈', '서바이버즈', '크리에이터즈', '이노베이터즈', '드림팀', '에이스', '에너지', '스피릿',
+  '스톰', '썬더스', '위너스', '챌린저스', '매버릭스', '퓨처스', '임팩트', '다이너마이트',
+  '이글스', '울프스', '샤크스', '라이온즈', '베어스', '판다스', '돌핀즈', '타이탄즈'
 ];
 
 // 랜덤 팀 이름 생성
@@ -62,7 +144,6 @@ export const calculateBalanceScore = (teams: Team[]): number => {
 export const greedyAlgorithm = (players: Player[], teamCount: number): Team[] => {
   // 점수 기준 내림차순 정렬
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-  
   // 팀 초기화
   const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
     id: `team-${index + 1}`,
@@ -71,27 +152,28 @@ export const greedyAlgorithm = (players: Player[], teamCount: number): Team[] =>
     totalScore: 0,
     averageScore: 0,
   }));
-  
-  // 각 플레이어를 가장 점수가 낮은 팀에 배정
+  // 인원 균등 제한 계산
+  const baseCount = Math.floor(sortedPlayers.length / teamCount);
+  const maxCount = baseCount + 1;
+  // 각 플레이어를 가장 점수가 낮고, 인원 제한을 넘지 않은 팀에 배정
   sortedPlayers.forEach(player => {
-    // 현재 총점이 가장 낮은 팀 찾기
-    const targetTeam = teams.reduce((minTeam, currentTeam) => 
-      currentTeam.totalScore < minTeam.totalScore ? currentTeam : minTeam
-    );
-    
+    // 인원 제한을 넘지 않은 팀 중에서 총점이 가장 낮은 팀 찾기
+    const targetTeam = teams
+      .filter(team => team.players.length < maxCount)
+      .reduce((minTeam, currentTeam) =>
+        currentTeam.totalScore < minTeam.totalScore ? currentTeam : minTeam
+      );
     targetTeam.players.push(player);
     const stats = calculateTeamStats(targetTeam.players);
     targetTeam.totalScore = stats.totalScore;
     targetTeam.averageScore = stats.averageScore;
   });
-  
   return teams;
 };
 
 // Snake 알고리즘: 1-2-3-3-2-1 순서로 배정
 export const snakeAlgorithm = (players: Player[], teamCount: number): Team[] => {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
-  
   const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
     id: `team-${index + 1}`,
     name: generateTeamName(),
@@ -99,13 +181,10 @@ export const snakeAlgorithm = (players: Player[], teamCount: number): Team[] => 
     totalScore: 0,
     averageScore: 0,
   }));
-  
   let currentTeamIndex = 0;
   let direction = 1; // 1: 증가, -1: 감소
-  
   sortedPlayers.forEach(player => {
     teams[currentTeamIndex].players.push(player);
-    
     // 다음 팀 인덱스 계산
     if (direction === 1 && currentTeamIndex === teamCount - 1) {
       direction = -1;
@@ -115,14 +194,12 @@ export const snakeAlgorithm = (players: Player[], teamCount: number): Team[] => 
       currentTeamIndex += direction;
     }
   });
-  
   // 팀 통계 업데이트
   teams.forEach(team => {
     const stats = calculateTeamStats(team.players);
     team.totalScore = stats.totalScore;
     team.averageScore = stats.averageScore;
   });
-  
   return teams;
 };
 
@@ -145,7 +222,6 @@ export const optimalAlgorithm = (players: Player[], teamCount: number): Team[] =
 // 랜덤 알고리즘: 완전 랜덤 배정
 export const randomAlgorithm = (players: Player[], teamCount: number): Team[] => {
   const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
-  
   const teams: Team[] = Array.from({ length: teamCount }, (_, index) => ({
     id: `team-${index + 1}`,
     name: generateTeamName(),
@@ -153,19 +229,25 @@ export const randomAlgorithm = (players: Player[], teamCount: number): Team[] =>
     totalScore: 0,
     averageScore: 0,
   }));
-  
-  shuffledPlayers.forEach((player, index) => {
-    const teamIndex = index % teamCount;
-    teams[teamIndex].players.push(player);
-  });
-  
+  // 균등 분배: 몫만큼 먼저 분배
+  const baseCount = Math.floor(shuffledPlayers.length / teamCount);
+  const remainder = shuffledPlayers.length % teamCount;
+  let idx = 0;
+  for (let i = 0; i < teamCount; i++) {
+    for (let j = 0; j < baseCount; j++) {
+      teams[i].players.push(shuffledPlayers[idx++]);
+    }
+  }
+  // 나머지 인원은 앞 팀부터 한 명씩 추가
+  for (let i = 0; i < remainder; i++) {
+    teams[i].players.push(shuffledPlayers[idx++]);
+  }
   // 팀 통계 업데이트
   teams.forEach(team => {
     const stats = calculateTeamStats(team.players);
     team.totalScore = stats.totalScore;
     team.averageScore = stats.averageScore;
   });
-  
   return teams;
 };
 
@@ -177,23 +259,99 @@ export const assignTeams = (
 ): TeamAssignmentResult => {
   let teams: Team[] = [];
   let benchPlayers: Player[] = [];
-  // benchCount만큼 전체에서 랜덤하게 추출
   const benchCount = players.length % teamCount;
   let mainPlayers = players;
   if (benchCount > 0) {
-    // 랜덤 셔플
-    const shuffled = [...players].sort(() => Math.random() - 0.5);
+    // benchCount만큼 완전 랜덤으로 선정
+    const shuffled = [...players];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     benchPlayers = shuffled.slice(0, benchCount);
-    // bench에 들어간 인원 제외
     const benchIds = new Set(benchPlayers.map(p => p.id));
-    mainPlayers = shuffled.filter(p => !benchIds.has(p.id));
+    mainPlayers = players.filter(p => !benchIds.has(p.id));
   }
-  if (algorithm === 'greedy') teams = greedyAlgorithm(mainPlayers, teamCount);
-  else if (algorithm === 'optimal') teams = optimalAlgorithm(mainPlayers, teamCount);
+  // bench 제외 후 남은 인원을 정확히 팀 수로 나누고, 나머지는 앞 팀부터 한 명씩 추가
+  if (algorithm === 'greedy') {
+    // 여러 번 greedy 시도 후 점수 차이 최소 조합 선택
+  let bestTeams: Team[] = [];
+    let minDiff = Infinity;
+    const ITER = 30;
+    for (let t = 0; t < ITER; t++) {
+      // 0점 이하(bench 포함) 인원 분리
+      const zeroPlayers = [...mainPlayers.filter(p => p.score <= 0)];
+      const nonZeroPlayers = [...mainPlayers.filter(p => p.score > 0)];
+      // 랜덤 셔플
+      for (let i = zeroPlayers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [zeroPlayers[i], zeroPlayers[j]] = [zeroPlayers[j], zeroPlayers[i]];
+      }
+      for (let i = nonZeroPlayers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [nonZeroPlayers[i], nonZeroPlayers[j]] = [nonZeroPlayers[j], nonZeroPlayers[i]];
+      }
+      // 팀별 목표 인원 수 계산 (ex: 14명 3팀 → [5,5,4])
+      const total = mainPlayers.length;
+      const baseCount = Math.floor(total / teamCount);
+      const remainder = total % teamCount;
+      const teamTargets = Array.from({ length: teamCount }, (_, i) => baseCount + (i < remainder ? 1 : 0));
+      const teamsTry: Team[] = Array.from({ length: teamCount }, (_, index) => ({
+        id: `team-${index + 1}`,
+        name: generateTeamName(),
+        players: [] as Player[],
+        totalScore: 0,
+        averageScore: 0,
+      }));
+      // 0점 이하 인원 greedy 분산 (팀별 목표 인원 미만만 배정)
+      zeroPlayers.forEach(player => {
+        const targetTeam = teamsTry
+          .filter((team, idx) => team.players.length < teamTargets[idx])
+          .reduce((minTeam, currentTeam) =>
+            currentTeam.totalScore < minTeam.totalScore ? currentTeam : minTeam
+          );
+        const idx = teamsTry.indexOf(targetTeam);
+        if (idx !== -1 && teamsTry[idx].players.length < teamTargets[idx]) {
+          teamsTry[idx].players.push(player);
+          const stats = calculateTeamStats(teamsTry[idx].players);
+          teamsTry[idx].totalScore = stats.totalScore;
+          teamsTry[idx].averageScore = stats.averageScore;
+        }
+      });
+      // 나머지 인원 greedy 배정 (팀별 목표 인원 미만만 배정)
+      nonZeroPlayers.forEach(player => {
+        const targetTeam = teamsTry
+          .filter((team, idx) => team.players.length < teamTargets[idx])
+          .reduce((minTeam, currentTeam) =>
+            currentTeam.totalScore < minTeam.totalScore ? currentTeam : minTeam
+          );
+        const idx = teamsTry.indexOf(targetTeam);
+        if (idx !== -1 && teamsTry[idx].players.length < teamTargets[idx]) {
+          teamsTry[idx].players.push(player);
+          const stats = calculateTeamStats(teamsTry[idx].players);
+          teamsTry[idx].totalScore = stats.totalScore;
+          teamsTry[idx].averageScore = stats.averageScore;
+        }
+      });
+      // 통계 업데이트
+      teamsTry.forEach(team => {
+        const stats = calculateTeamStats(team.players);
+        team.totalScore = stats.totalScore;
+        team.averageScore = stats.averageScore;
+      });
+      // 점수 차이 계산
+      const scores = teamsTry.map(team => team.totalScore);
+      const diff = Math.max(...scores) - Math.min(...scores);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestTeams = teamsTry.map(team => ({ ...team, players: [...team.players] }));
+      }
+    }
+    teams = bestTeams;
+  } else if (algorithm === 'optimal') teams = optimalAlgorithm(mainPlayers, teamCount);
   else if (algorithm === 'random') teams = randomAlgorithm(mainPlayers, teamCount);
   else teams = greedyAlgorithm(mainPlayers, teamCount);
-
-  // 깍두기팀 결과에 추가
+  // bench 결과에 추가
   if (benchPlayers.length > 0) {
     teams.push({
       id: 'bench',

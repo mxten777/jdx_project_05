@@ -15,7 +15,7 @@ export interface Team {
 }
 
 // 팀 배정 알고리즘 타입
-export type AlgorithmType = 'greedy' | 'optimal' | 'random';
+export type AlgorithmType = 'greedy' | 'optimal' | 'random' | 'snake';
 
 // 팀 배정 결과 타입
 export interface TeamAssignmentResult {

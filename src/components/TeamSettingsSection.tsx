@@ -44,14 +44,14 @@ const TeamSettingsSection: React.FC<TeamSettingsSectionProps> = ({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          배정 방식
+          배정 방식 <span className="text-xs text-gray-400">(기본: 그리디, 인원 균등+점수 밸런스)</span>
         </label>
         <select
           value={algorithm}
           onChange={(e) => setAlgorithm(e.target.value as AlgorithmType)}
           className="w-full p-2 sm:p-3 border-2 border-gold-300 rounded-xl focus:ring-2 focus:ring-gold-400 focus:border-transparent bg-white dark:bg-navy-900 dark:border-gold-300 dark:text-white text-sm sm:text-base font-normal shadow-sm font-premium"
         >
-          <option value="greedy">그리디 (균형 우선)</option>
+          <option value="greedy">그리디 (인원 균등+점수 밸런스)</option>
           <option value="snake">스네이크 드래프트</option>
           <option value="random">랜덤 배정</option>
         </select>
